@@ -17,21 +17,34 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard', [
-        'status' => session('status'),
-        'menu_items' => Menu::latest()->paginate(8),
-        'message' => session('message')?session('message'):null,
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 Route::prefix('admin')->group(function () {
+
     Route::resource('menu', MenuController::class);
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard', [
+            'status' => session('status'),
+            'menu_items' => Menu::latest()->paginate(8),
+            'message' => session('message')?session('message'):null,
+        ]);
+    })->name('admin.dashboard');
+
+})->middleware(['auth', 'verified']);
+
+Route::prefix('customer')-> group(function () {
+
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard', [
+            'status' => session('status'),
+            'menu_items' => Menu::latest()->paginate(8),
+            'message' => session('message')?session('message'):null,
+        ]);
+    })->middleware(['auth', 'verified'])->name('cust.dashboard');
+    
 });
 
 require __DIR__.'/auth.php';
