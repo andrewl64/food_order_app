@@ -1,27 +1,27 @@
 import { useState, useContext, forwardRef, useImperativeHandle } from 'react';
-import { MenuContext } from '@/store/menu-context';
+import { OrderContext } from '@/store/orders-context';
 import { router, usePage } from '@inertiajs/react';
 import PaginateLinks from '@/Components/PaginateLinks';
 import Modal from '@/Components/Modal';
-import Item from './Item';
+import Order from "./Orders";
 
 let modalDat = '';
 
-const ViewItems = forwardRef(({paginationData, updatePaginationData, updateMenuItems}, ref) => {
+const ViewOrders = forwardRef(({paginationData, updatePaginationData, updateOrders}, ref) => {
 
     const propDat = usePage().props;
 
-    const menuCtx = useContext(MenuContext);
+    const orderCtx = useContext(OrderContext);
 
     const [showModal, setShowModal] = useState(propDat.message!==null);
 
     useImperativeHandle(ref, () => ({
         reload: () => {
             router.reload({
-                only: ['menu_items'],
+                only: ['orders'],
                 preserveScroll: true,
                 onSuccess: (resp) => {
-                    menuCtx.data = resp.props.menu_items.data;
+                    orderCtx.data = resp.props.orders.data;
                 }
             });
         }
@@ -32,50 +32,53 @@ const ViewItems = forwardRef(({paginationData, updatePaginationData, updateMenuI
         router.get(url, {
             preserveScroll: true,
             replace: true,
-            only: ['menu_items'],
+            only: ['orders'],
             onSuccess: page => {
-                updatePaginationData(page.props.menu_items);
+                updatePaginationData(page.props.orders);
             }
         });
     }
 
-    const editConfirm = (e) => {
+    const approveConfirm = (e) => {
         modalDat = {
-            role: 'edit',
+            role: 'approve',
             item: e,
         };
         setShowModal(true);
 
         //editItem();
     }
-    const deleteConfirm = (e) => {
+    const declineConfirm = (e) => {
         modalDat = {
-            role: 'del',
+            role: 'decline',
             id: e,
         };
         setShowModal(true);
     }
-    const editItem = (e) => {
-        router.post(`/menu/${e}`, {
+    const approveOrder = (e) => {
+        router.post(`/orders/${e}`, {
             _method: 'PATCH',
             preserveScroll: true,
-            only: ['menu_items'],
+            only: ['orders'],
             replace: true,
             onSuccess: () => {
-                updateMenuItems();
+                modalDat = {
+                    role: 'approve_success',
+                };
+                updateOrders();
             }
         });
     }
 
-    const deleteItem = (e) => {
+    const declineOrder = (e) => {
         setShowModal(false);
-        router.delete(route('menu.destroy', e), {
+        router.delete(route('orders.destroy', e), {
             preserveScroll: true,
-            only: ['menu_items'],
+            only: ['orders'],
             replace: true,
             onSuccess: () => {
                 modalDat = {
-                    role: 'del_success',
+                    role: 'decline_success',
                 };
                 setShowModal(true);
             }
@@ -90,35 +93,44 @@ const ViewItems = forwardRef(({paginationData, updatePaginationData, updateMenuI
     return (
         <>
             <Modal show={showModal} onClose={closeModal}>
-                {modalDat.role==='edit'?
+                {modalDat.role==='approve'?
                     <div className="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-2">   
                         <div className="lg:col-span-2">
                             <div className="grid gap-4 gap-y-2 text-sm grid-cols-1">
                             <p className="text-white mb-6">Are you sure?</p>
                             <div className="flex gap-4 justify-center">
-                                <button className="text-gray-800 bg-gray-200 w-24 py-2 hover:bg-gray-400 rounded" onClick={editItem}>Yes</button>
+                                <button className="text-gray-800 bg-gray-200 w-24 py-2 hover:bg-gray-400 rounded" onClick={approveOrder}>Yes</button>
                                 <button className="text-gray-800 bg-gray-200 w-24 py-2 hover:bg-gray-400 rounded" onClick={closeModal}>No</button>
                             </div>
                             </div>
                         </div>
                     </div>
-                : modalDat.role==='del'?
+                : modalDat.role==='decline'?
                     <div className="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-2">   
                         <div className="lg:col-span-2">
                             <div className="grid gap-4 gap-y-2 text-sm grid-cols-1">
                             <p className="text-white mb-6">Are you sure?</p>
                             <div className="flex gap-4 justify-center">
-                                <button className="text-gray-800 bg-gray-200 w-24 py-2 hover:bg-gray-400 rounded" onClick={() =>deleteItem(modalDat.id)}>Yes</button>
+                                <button className="text-gray-800 bg-gray-200 w-24 py-2 hover:bg-gray-400 rounded" onClick={() =>declineOrder(modalDat.id)}>Yes</button>
                                 <button className="text-gray-800 bg-gray-200 w-24 py-2 hover:bg-gray-400 rounded" onClick={closeModal}>No</button>
                             </div>
                             </div>
                         </div>
                     </div>
-                : modalDat.role==='del_success'?
+                : modalDat.role==='approve_success'?
                     <div className="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-2">   
                         <div className="lg:col-span-2">
                             <div className="grid gap-4 gap-y-2 text-sm grid-cols-1">
-                                <p className="text-white mb-6">Item deleted successfully</p>
+                                <p className="text-white mb-6">Order approved successfully</p>
+                                <button className="text-gray-800 bg-gray-200 w-24 py-2 hover:bg-gray-400 rounded mx-auto my-0" onClick={closeModal}>Ok</button>
+                            </div>
+                        </div>
+                    </div>
+                : modalDat.role==='decline_success'?
+                    <div className="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-2">   
+                        <div className="lg:col-span-2">
+                            <div className="grid gap-4 gap-y-2 text-sm grid-cols-1">
+                                <p className="text-white mb-6">Order declined successfully</p>
                                 <button className="text-gray-800 bg-gray-200 w-24 py-2 hover:bg-gray-400 rounded mx-auto my-0" onClick={closeModal}>Ok</button>
                             </div>
                         </div>
@@ -129,14 +141,14 @@ const ViewItems = forwardRef(({paginationData, updatePaginationData, updateMenuI
             <div className="flex-1 viewItems">
                 <div className="min-h-screen p-6 bg-gray-100 dark:bg-gray-900 flex justify-center">
                     <div className="container max-w-screen-lg mx-auto">
-                        <h2 className="font-semibold text-xl text-gray-50">Menu Items</h2>
-                        <p className="text-gray-50 mb-6">Edit or Delete menu items</p>
+                        <h2 className="font-semibold text-xl text-gray-50">Open Orders</h2>
+                        <p className="text-gray-50 mb-6">Managed Open Orders</p>
                         <div className="bg-white rounded shadow-lg p-4 px-4 md:p-8 mb-2">
                             <div className="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-4">
-                                {menuCtx.data.map(item => {
+                                {orderCtx.data.orders.map(item => {
                                     return (
                                         <div key={item.id} className="bg-white rounded shadow-lg p-4">
-                                            <Item itemdat={item} onEditConfirm={()=>editConfirm(item)} onDeleteConfirm={deleteConfirm} />
+                                            <Order itemdat={item} onEditConfirm={()=>approveConfirm(item)} onDeleteConfirm={declineConfirm} />
                                         </div>
                                     );
                                 })}
@@ -152,4 +164,4 @@ const ViewItems = forwardRef(({paginationData, updatePaginationData, updateMenuI
     );
 });
 
-export default ViewItems;
+export default ViewOrders;

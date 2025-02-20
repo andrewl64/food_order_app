@@ -12,4 +12,9 @@ class Menu extends Model
         'desc',
         'image',
     ];
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }

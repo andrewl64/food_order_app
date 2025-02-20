@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Menu;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -12,6 +13,7 @@ use Illuminate\Validation\Rules\File;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,12 +25,6 @@ class MenuController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Dashboard', [
-            'status' => session('status'),
-            'message' => session('message')?session('message'):null,
-            'alert-type' => session('alert-type'),
-            'menu_items' => Menu::latest()->paginate(8),
-        ]);
     }
 
     /**
@@ -36,7 +32,6 @@ class MenuController extends Controller
      */
     public function create()
     {
-        //
     }
 
     /**
@@ -59,10 +54,10 @@ class MenuController extends Controller
             $img = $request->file('image');
             $name_gen = hexdec(uniqid()).'.'.$img->getClientOriginalExtension();
 
-            $food_img = Image::read($img)->resize(1024,1024);
-            Storage::disk('public')->put( 'menu/'.$name_gen, file_get_contents($request->file('image')));
+            $food_img = Image::read($img)->resize(1024,1024)->encode();
+            Storage::disk('public')->put( 'menu/'.$name_gen, $food_img);
 
-            Menu::insert([
+            Menu::create([
                 'name' => $request->name,
                 'price' => $request->price,
                 'desc' => $request->desc,
@@ -71,21 +66,15 @@ class MenuController extends Controller
             ]);
 
         } else {
-            Menu::insert([
+            Menu::create([
                 'name' => $request->name,
                 'price' => $request->price,
                 'desc' => $request->desc,
                 'created_at' => Carbon::now(),
             ]);
         }
-        $notification = array(
-            'message' => 'Menu item added successfully.',
-            'alert-type' => 'success',
-        );
-        return Inertia::render('Dashboard', [
-            'menu_items' => Menu::latest()->paginate(8),
-            'message' => 'Menu item added successfully.',
-        ]);
+
+        return redirect()->back()->with('message', 'Menu item added successfully.');
     }
 
     /**
@@ -109,7 +98,47 @@ class MenuController extends Controller
      */
     public function update(Request $request, Menu $menu)
     {
-        dd($request);
+        try {
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'price' => 'required|numeric',
+                'desc' => 'required|string',
+                'image' => [
+                    'nullable',
+                    File::types(['jpeg', 'jpg', 'png'])
+                        ->max(5 * 1024),
+                ],
+            ]);
+        } catch (ValidationException $e) {
+            dd($e->errors());
+        }
+
+        
+
+        $menu->name = $validatedData['name'];
+        $menu->price = $validatedData['price'];
+        $menu->desc = $validatedData['desc'];
+
+        
+        if ($request->hasFile('image')) {
+
+            $img = $request->file('image');
+            $name_gen = hexdec(uniqid()).'.'.$img->getClientOriginalExtension();
+
+            $food_img = Image::read($img)->resize(1024,1024)->encode();
+            Storage::disk('public')->put( 'menu/'.$name_gen, $food_img);
+
+            if($menu->image) {
+                if(Storage::disk('public')->exists('menu/'.$menu->image)) {
+                    Storage::disk('public')->delete('menu/'.$menu->image);
+                }
+            }
+
+            $menu->image = $name_gen;
+        }
+        $menu->save();
+
+        return redirect()->back()->with('message', 'Menu item updated successfully.');
     }
 
     /**
@@ -117,14 +146,8 @@ class MenuController extends Controller
      */
     public function destroy(Menu $menu)
     {
-        if(Menu::count() === 1) {
-            Menu::truncate();
-        } else {
-            Menu::destroy($menu->id);
-        }
-        return Inertia::render('Dashboard', [
-            'menu_items' => Menu::latest()->paginate(8),
-            'message' => 'Menu item deleted successfully.',
-        ]);
+        Menu::destroy($menu->id);
+
+        return redirect()->back()->with('message', 'Menu item deleted successfully.');
     }
 }

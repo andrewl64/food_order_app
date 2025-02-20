@@ -1,13 +1,20 @@
-import AuthenticatedAdminLayout from '@/Layouts/AuthenticatedAdminLayout';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import AdminDash from './Admin/App';
-import CustomerDash from './Customer/App';
+import Main from './Main';
+import { SidebarProvider } from '@/store/sidebar-context';
+import { CartProvider } from '@/store/cart-context';
+import Sidebar from '@/Layouts/Sidebar';
 
 export default function Dashboard() {
     return (
-        <AuthenticatedAdminLayout>
-            <Head title="Dashboard" />
-            <AdminDash />
-        </AuthenticatedAdminLayout>
+        <SidebarProvider>
+            <CartProvider>
+                <AuthenticatedLayout>
+                    <Sidebar />
+                    <Head title="Dashboard" />
+                    <Main />
+                </AuthenticatedLayout>
+            </CartProvider>
+        </SidebarProvider>
     );
 }
