@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Main from './Main';
 import { SidebarProvider } from '@/store/sidebar-context';
 import { CartProvider } from '@/store/cart-context';

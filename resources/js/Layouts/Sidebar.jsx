@@ -22,6 +22,7 @@ export default () => {
             <div className="flex flex-col py-4 overflow-y-auto duration-500 ease-linear no-scrollbar">
                     <ul className="text-gray-300 text-xl">
                         <li className='mt-4'><button className="flex gap-2" onClick={()=>setMenu('dashboard')}><ChartPieIcon className="w-8"/><span>Dashboard</span></button></li>
+                        <li className='mt-4'><button className="flex gap-2" onClick={()=>setMenu('orders')}><NewspaperIcon className="w-8"/><span>Orders</span></button></li>
 
                         {role.length !== 0 && (
                             <>
@@ -29,12 +30,6 @@ export default () => {
                                     <ul className={`text-gray-300 text-lg transition-all duration-500 ease-in-out overflow-hidden ${activeSidebar === 'menu' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
                                         <li className={`${activeSidebar === 'menu' ? 'opacity-100' : 'opacity-0 transition-opacity duration-500 ease-in-out delay-300'}`}><button onClick={()=>setMenu('viewItems')}>View Items</button></li>
                                         {(role.includes('admin')||role.includes('manager'))&& <li className={`${activeSidebar === 'menu' ? 'opacity-100' : 'opacity-0 transition-opacity duration-500 ease-in-out delay-300'}`}><button onClick={()=>setMenu('addItems')}>Add Item</button></li>}
-                                    </ul>
-                                </li>
-                                <li className='mt-4'><button className="flex gap-2" onClick={()=>toggleSidebar('orders')}><NewspaperIcon className="w-8"/><span>Orders</span></button>
-                                    <ul className={`text-gray-300 text-lg transition-all duration-500 ease-in-out overflow-hidden ${activeSidebar === 'orders' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                        <li className={`${activeSidebar === 'orders' ? 'opacity-100' : 'opacity-0 transition-opacity duration-500 ease-in-out delay-300'}`}><button onClick={()=>setMenu('openOrders')}>Open Orders</button></li>
-                                        <li className={`${activeSidebar === 'orders' ? 'opacity-100' : 'opacity-0 transition-opacity duration-500 ease-in-out delay-300'}`}><button onClick={()=>setMenu('closedOrders')}>Closed Orders</button></li>
                                     </ul>
                                 </li>
                             </>

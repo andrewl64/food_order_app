@@ -52,8 +52,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                     :
                                     (
                                         <NavLink
-                                            href={route('cust_dashboard')}
-                                            active={route().current('cust_dashboard')}
+                                            href={route('cust_index')}
+                                            active={route().current('cust_index')}
                                         >
                                             Dashboard
                                         </NavLink>
@@ -66,7 +66,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <div className="relative flex items-center ms-3">
                                     {isCust && (
                                         <>
-                                            <Link href={route('cust_dashboard')} className='flex gap-1 text-white hover:text-gray-200'>
+                                            <Link href={route('cust_index')} className='flex gap-1 text-white hover:text-gray-200'>
                                                 <ShoppingCartIcon className='w-5 text-white' />({cartItems.length})
                                             </Link>
                                         </>
@@ -184,8 +184,8 @@ export default function AuthenticatedLayout({ header, children }) {
                             :
                             (
                                 <ResponsiveNavLink
-                                    href={route('cust_dashboard')}
-                                    active={route().current('cust_dashboard')}
+                                    href={route('cust_index')}
+                                    active={route().current('cust_index')}
                                 >
                                     Dashboard
                                 </ResponsiveNavLink>

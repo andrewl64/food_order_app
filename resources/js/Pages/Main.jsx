@@ -3,7 +3,7 @@ import Modal from '@/Components/Modal';
 import {useState, useRef } from 'react';
 import AddItem from '@/Components/Menu/AddItem';
 import ViewItems from '@/Components/Menu/ViewItems';
-import OpenOrders from '@/Components/Orders/OpenOrders';
+import AllOrders from '@/Components/Orders/AllOrders';
 import DashHome from '@/Components/Dashboard/DashHome';
 
 import { MenuContext } from '@/store/menu-context';
@@ -90,17 +90,10 @@ export default function Main() {
                 menu: propDat.menu_items.data,
             }}}>
                 {(!activeMenu || activeMenu === 'dashboard') && <DashHome />}
+                {(activeMenu === 'orders') && <AllOrders ref={viewOrdersRef} paginationData={orderPaginationData} updatePaginationData={updateOrderPaginationData} updateOrders={updateOrders} />}
                 {!isCustomer && activeMenu === 'addItems' && <AddItem updateMenuItems={updateMenuItems} />}
                 {!isCustomer && activeMenu === 'viewItems' && <ViewItems ref= {viewItemsRef} paginationData={menuPaginationData} updatePaginationData={updateMenuPaginationData} updateMenuItems={updateMenuItems} />}
             </MenuContext.Provider>
-            {!isCustomer && (
-                <OrderContext.Provider value={{
-                    data: {
-                        orders: propDat.orders.data,
-                    }}}>
-                    {activeMenu === 'openOrders' && <OpenOrders ref={viewOrdersRef} paginationData={orderPaginationData} updatePaginationData={updateOrderPaginationData} updateOrders={updateOrders} />}
-                </OrderContext.Provider>
-            )}
         </div>
     );
 }

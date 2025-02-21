@@ -1,17 +1,14 @@
 import { useState, useContext, forwardRef, useImperativeHandle } from 'react';
-import { OrderContext } from '@/store/orders-context';
 import { router, usePage } from '@inertiajs/react';
 import PaginateLinks from '@/Components/PaginateLinks';
 import Modal from '@/Components/Modal';
-import Order from "./Orders";
+import Order from './Order';
 
 let modalDat = '';
 
-const ViewOrders = forwardRef(({paginationData, updatePaginationData, updateOrders}, ref) => {
-
+const AllOrders = forwardRef(({paginationData, updatePaginationData, updateOrders}, ref) => {
     const propDat = usePage().props;
-
-    const orderCtx = useContext(OrderContext);
+    const role = propDat.auth.rolenames;
 
     const [showModal, setShowModal] = useState(propDat.message!==null);
 
@@ -21,7 +18,7 @@ const ViewOrders = forwardRef(({paginationData, updatePaginationData, updateOrde
                 only: ['orders'],
                 preserveScroll: true,
                 onSuccess: (resp) => {
-                    orderCtx.data = resp.props.orders.data;
+                    
                 }
             });
         }
@@ -39,14 +36,15 @@ const ViewOrders = forwardRef(({paginationData, updatePaginationData, updateOrde
         });
     }
 
+    const processConfirm = (e) => {
+        
+    }
     const approveConfirm = (e) => {
         modalDat = {
             role: 'approve',
             item: e,
         };
         setShowModal(true);
-
-        //editItem();
     }
     const declineConfirm = (e) => {
         modalDat = {
@@ -55,6 +53,11 @@ const ViewOrders = forwardRef(({paginationData, updatePaginationData, updateOrde
         };
         setShowModal(true);
     }
+
+    const processOrder = (e) => {
+
+    }
+
     const approveOrder = (e) => {
         router.post(`/orders/${e}`, {
             _method: 'PATCH',
@@ -141,14 +144,19 @@ const ViewOrders = forwardRef(({paginationData, updatePaginationData, updateOrde
             <div className="flex-1 viewItems">
                 <div className="min-h-screen p-6 bg-gray-100 dark:bg-gray-900 flex justify-center">
                     <div className="container max-w-screen-lg mx-auto">
-                        <h2 className="font-semibold text-xl text-gray-50">Open Orders</h2>
-                        <p className="text-gray-50 mb-6">Managed Open Orders</p>
+                        <h2 className="font-semibold text-xl text-gray-50">Orders</h2>
+                        <p className="text-gray-50 mb-6">Managed Orders</p>
                         <div className="bg-white rounded shadow-lg p-4 px-4 md:p-8 mb-2">
-                            <div className="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-4">
-                                {orderCtx.data.orders.map(item => {
+                            <div className="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-2">
+                                {propDat.orders.data.map(item => {
                                     return (
                                         <div key={item.id} className="bg-white rounded shadow-lg p-4">
-                                            <Order itemdat={item} onEditConfirm={()=>approveConfirm(item)} onDeleteConfirm={declineConfirm} />
+                                            <Order
+                                                itemdat={item}
+                                                onProcessConfirm={role.length !== 0 ? ()=>processConfirm(item) : null}
+                                                onApproveConfirm={role.length !== 0 ? ()=>approveConfirm(item) : null}
+                                                onDeclineConfirm={role.length !== 0 ? declineConfirm : null}
+                                            />
                                         </div>
                                     );
                                 })}
@@ -164,4 +172,4 @@ const ViewOrders = forwardRef(({paginationData, updatePaginationData, updateOrde
     );
 });
 
-export default ViewOrders;
+export default AllOrders;

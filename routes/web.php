@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
 
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 use App\Models\Menu;
+use App\Models\Order;
+use App\Models\OrderItem;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -44,13 +47,8 @@ Route::middleware(['auth', 'verified', 'role:manager|cashier'])->prefix('staff')
 });
 
 Route::middleware(['auth', 'verified'])->prefix('customer')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard', [
-            'status' => session('status'),
-            'menu_items' => Menu::latest()->paginate(12),
-            'message' => session('message')?session('message'):null,
-        ]);
-    })->name('cust_dashboard');
+    Route::resource('customer', CustomerController::class);
+    Route::get('/dashboard', [CustomerController::class, 'index'])->name('cust_index');
 });
 
 Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
@@ -61,7 +59,7 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
     } elseif ($user->hasAnyRole(['manager', 'cashier'])) {
         return redirect()->route('staff_index');
     } else {
-        return redirect()->route('cust_dashboard');
+        return redirect()->route('cust_index');
     }
 })->name('dashboard');
 
